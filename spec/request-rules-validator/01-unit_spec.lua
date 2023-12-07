@@ -13,22 +13,49 @@ end
 
 describe(PLUGIN_NAME .. ": (schema)", function()
 
-  -- OK
-  -- it("without values", function()
-  --   local ok, err = validate({})
-  --   assert.is_nil(ok)
-  --   assert.is_table(err)
-  --   assert.equals("at least one of these fields must be non-empty: 'config.allow_headers', 'config.deny_headers'", err["@entity"][1])
-  -- end)
+  it("without values", function()
+    local ok, err = validate({})
+    assert.is_nil(ok)
+    assert.is_table(err)
+    assert.equals("at least one of these fields must be non-empty: 'config.allow_headers', 'config.deny_headers'", err["@entity"][1])
+  end)
+
+  it("test only one allow headers", function()
+    local conf = {
+      allow_headers = { "Content-Type:application/json" },
+    }
+    kong.log.inspect(conf)
+    local ok, err = validate(conf)
+    assert.is_nil(err)
+    assert.is_truthy(ok)
+  end)
 
   it("test only one deny headers", function()
     local conf = {
-      deny_headers = {
-        {
-          name = "Accept-Charset",
-          value = "UTF-8"
-        },
-      },
+      deny_headers = { "Accept-Charset:UTF-8" },
+    }
+    kong.log.inspect(conf)
+    local ok, err = validate(conf)
+    assert.is_nil(err)
+    assert.is_truthy(ok)
+  end)
+
+  it("test only one allow and one deny headers", function()
+    local conf = {
+      allow_headers = { "Content-Type:application/json" },
+      deny_headers = { "Accept-Charset:UTF-8" },
+    }
+    kong.log.inspect(conf)
+    local ok, err = validate(conf)
+    assert.is_nil(err)
+    assert.is_truthy(ok)
+  end)
+
+
+  it("test many allow and many deny headers", function()
+    local conf = {
+      allow_headers = { "Content-Type:application/json", "x-header-test:batatinha" },
+      deny_headers = { "Accept-Charset:UTF-8", "x-header-fail:batatinha" },
     }
     kong.log.inspect(conf)
     local ok, err = validate(conf)
