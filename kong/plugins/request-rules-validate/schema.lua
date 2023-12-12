@@ -58,15 +58,10 @@ return {
         "config.allow_headers", "config.deny_headers"
       },
       fn = function(entity)
-          kong.log("================================ testando configs")
-          kong.log.inspect(entity.config.allow_headers)
-          return true
-
-
-          -- if entity.config ~= nil and entity.config.allow_headers ~= nil and entity.config.deny_headers ~= nil then
-          --   kong.log("================================ entrou no if")
-          --   return true
-          -- end
+          if entity.config ~= nil and entity.config.allow_headers ~= nil and entity.config.deny_headers ~= nil then
+            kong.log("================================ entrou no if")
+            return true
+          end
 
           -- -- for name, value in pairs(entity.config.allow_headers) do
           -- --   if (value == ngx.nul) then
