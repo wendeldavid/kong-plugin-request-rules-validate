@@ -17,19 +17,19 @@ for _, strategy in helpers.each_strategy() do
 
         -- Inject a test route. No need to create a service, there is a default
         -- service which will echo the request.
-        local route1 = bp.routes:insert({
+        local route_1 = bp.routes:insert({
           paths = { "/request_test1" }
         })
-        local route2 = bp.routes:insert({
+        local route_2 = bp.routes:insert({
           paths = { "/request_test2" }
         })
 
         bp.plugins:insert {
           name = PLUGIN_NAME,
-          route = { id = route1.id },
+          route = { id = route_1.id },
           config = {
-            allow_headers = { { name = "Content-Type", value = "application/json" }, { name = "x-header-test", value = "batatinha" } },
-            deny_headers = { { name = "Accept-Charset", value = "UTF-8" }, { name = "x-header-fail", value = "batatinha" } },
+            allow_headers = { { name = "Content-Type", value = "application/json" } },
+            deny_headers = { { name = "x-header-fail", value = "batatinha" } },
           },
         }
 
@@ -58,15 +58,52 @@ for _, strategy in helpers.each_strategy() do
         if client then client:close() end
       end)
 
-      describe("request_1", function()
+      describe("request_1 header allow ok", function()
         it("request with multiples limits", function()
           local r = client:get("/request_test1", {
             headers = {
               ["Content-Type"] = "application/json"
             }
           })
-          -- validate that the request succeeded, response status 200
+
           assert.response(r).has.status(200)
+        end)
+      end)
+
+      describe("request_2 headers permssive allow ok", function()
+        it("request with multiples limits", function()
+          local r = client:get("/request_test1", {
+            headers = {
+              ["Content-Type"] = "application/json",
+              ["X-Batatinha"] = "test"
+            }
+          })
+
+          assert.response(r).has.status(200)
+        end)
+      end)
+
+      describe("request_1 header deny ok", function()
+        it("request with multiples limits", function()
+          local r = client:get("/request_test1", {
+            headers = {
+              ["x-header-fail"] = "not-fail"
+            }
+          })
+
+          assert.response(r).has.status(200)
+        end)
+      end)
+
+      describe("request_1 header deny fail", function()
+        it("request with multiples limits", function()
+          local r = client:get("/request_test1", {
+            headers = {
+              ["x-header-fail"] = "batatinha"
+            }
+          })
+
+          assert.response(r).has.status(400)
         end)
       end)
 
