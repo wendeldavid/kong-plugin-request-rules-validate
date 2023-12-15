@@ -18,18 +18,28 @@ for _, strategy in helpers.each_strategy() do
         -- Inject a test route. No need to create a service, there is a default
         -- service which will echo the request.
         local route_1 = bp.routes:insert({
-          paths = { "/request_test1" }
+          paths = { "/request_test_1" }
         })
-        local route_2 = bp.routes:insert({
-          paths = { "/request_test2" }
-        })
-
         bp.plugins:insert {
           name = PLUGIN_NAME,
           route = { id = route_1.id },
           config = {
-            allow_headers = { { name = "Content-Type", value = "application/json" } },
-            deny_headers = { { name = "x-header-fail", value = "batatinha" } },
+            strict_allow = false,
+            allow_headers = { "Content-Type:application/json", "x-real-ip:0.0.0.0" },
+            deny_headers = { "x-header-fail:batatinha" },
+          },
+        }
+
+        local route_2 = bp.routes:insert({
+          paths = { "/request_test_2" }
+        })
+        bp.plugins:insert {
+          name = PLUGIN_NAME,
+          route = { id = route_2.id },
+          config = {
+            strict_allow = true,
+            allow_headers = { "Content-Type:application/json", "x-real-ip:0.0.0.0" },
+            deny_headers = {},
           },
         }
 
@@ -58,9 +68,10 @@ for _, strategy in helpers.each_strategy() do
         if client then client:close() end
       end)
 
+      -- ROUTE 1
       describe("request_1 header allow ok", function()
-        it("request with multiples limits", function()
-          local r = client:get("/request_test1", {
+        it("request_1 header allow ok", function()
+          local r = client:get("/request_test_1", {
             headers = {
               ["Content-Type"] = "application/json"
             }
@@ -70,9 +81,9 @@ for _, strategy in helpers.each_strategy() do
         end)
       end)
 
-      describe("request_2 headers permssive allow ok", function()
-        it("request with multiples limits", function()
-          local r = client:get("/request_test1", {
+      describe("request_1 headers permssive allow ok", function()
+        it("request_1 headers permssive allow ok", function()
+          local r = client:get("/request_test_1", {
             headers = {
               ["Content-Type"] = "application/json",
               ["X-Batatinha"] = "test"
@@ -84,8 +95,8 @@ for _, strategy in helpers.each_strategy() do
       end)
 
       describe("request_1 header deny ok", function()
-        it("request with multiples limits", function()
-          local r = client:get("/request_test1", {
+        it("request_1 header deny ok", function()
+          local r = client:get("/request_test_1", {
             headers = {
               ["x-header-fail"] = "not-fail"
             }
@@ -96,8 +107,8 @@ for _, strategy in helpers.each_strategy() do
       end)
 
       describe("request_1 header deny fail", function()
-        it("request with multiples limits", function()
-          local r = client:get("/request_test1", {
+        it("request_1 header deny fail", function()
+          local r = client:get("/request_test_1", {
             headers = {
               ["x-header-fail"] = "batatinha"
             }
@@ -107,29 +118,46 @@ for _, strategy in helpers.each_strategy() do
         end)
       end)
 
-      -- describe("request_2", function()
-      --   it("request conflict quotas", function()
-      --     local r = client:get("/request_test2", {
-      --       headers = {
-      --         apikey = "key-test"
-      --       }
-      --     })
-      --     -- validate that the request succeeded, response status 200
-      --     assert.response(r).has.status(200)
+      -- ROUTE 2
+      describe("request_2 header strict allow ok", function()
+        it("request_2 header strict allow ok", function()
+          local r = client:get("/request_test_2", {
+            headers = {
+              ["Content-Type"] = "application/json",
+              ["x-real-ip"] = "0.0.0.0",
+            }
+          })
 
-      --     local consumer_header = assert.request(r).has.header("x-consumer-username")
-      --     assert.equal("consumer_name", consumer_header)
+          assert.response(r).has.status(200)
+        end)
+      end)
 
-      --     -- now check the request (as echoed by mockbin) to have the header
-      --     local rate_limit_header = assert.response(r).has.header("RateLimit-Limit")
-      --     -- validate the value of that header
-      --     assert.equal("20", rate_limit_header)
+      describe("request_2 header strict allow ok", function()
+        it("request_2 header strict allow ok", function()
+          local r = client:get("/request_test_2", {
+            headers = {
+              ["Content-Type"] = "application/json",
+              ["x-real-ip"] = "0.0.0.0",
+              ["X-Batatinha"] = "test",
+            }
+          })
 
-      --     local rate_limit_minute_period_header = assert.response(r).has.header("X-RateLimit-Limit-Minute")
-      --     assert.equal("20", rate_limit_minute_period_header)
-      --   end)
-      -- end)
+          assert.response(r).has.status(200)
+        end)
+      end)
 
+      describe("request_2 headers strict allow fail", function()
+        it("request_2 headers strict allow fail", function()
+          local r = client:get("/request_test_2", {
+            headers = {
+              ["Content-Type"] = "application/json",
+              ["X-Batatinha"] = "test",
+            }
+          })
+
+          assert.response(r).has.status(400)
+        end)
+      end)
 
     end)
 end

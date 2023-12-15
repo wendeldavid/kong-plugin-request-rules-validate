@@ -22,18 +22,6 @@ local colon_header_value_array = {
   elements = { type = "string", match = "^[^:]+:.*$", custom_validator = validate_headers },
 }
 
-local headers_list = {
-  type = "array",
-  default = {},
-  required = false,
-  elements = {
-    type = "record",
-    fields = {
-      { name = { type = "string", required = true } },
-      { value = { type = "string", required = true } },
-  } },
-}
-
 return {
   name = "request-rules-validate",
   fields = {
@@ -42,10 +30,10 @@ return {
         type = "record",
         fields = {
 
-          { allow_headers = headers_list },
-          { deny_headers = headers_list },
+          { allow_headers = colon_header_value_array },
+          { deny_headers = colon_header_value_array },
 
-          { permissive_allow = { type = "boolean", required = true, default = true }, },
+          { strict_allow = { type = "boolean", required = true, default = false }, },
         }
       },
     },

@@ -10,7 +10,6 @@ local validate do
   end
 end
 
-
 describe(PLUGIN_NAME .. ": (schema)", function()
 
   it("without values", function()
@@ -22,7 +21,7 @@ describe(PLUGIN_NAME .. ": (schema)", function()
 
   it("test only one allow headers", function()
     local conf = {
-      allow_headers = { { name = "Content-Type", value = "application/json" } },
+      allow_headers = { "Content-Type:application/json" },
     }
     local ok, err = validate(conf)
     assert.is_nil(err)
@@ -31,7 +30,7 @@ describe(PLUGIN_NAME .. ": (schema)", function()
 
   it("test only one deny headers", function()
     local conf = {
-      deny_headers = { { name = "Accept-Charset", value = "UTF-8" } },
+      deny_headers = { "Accept-Charset:UTF-8" },
     }
     kong.log.inspect(conf)
     local ok, err = validate(conf)
@@ -41,8 +40,8 @@ describe(PLUGIN_NAME .. ": (schema)", function()
 
   it("test only one allow and one deny headers", function()
     local conf = {
-      allow_headers = { { name = "Content-Type", value = "application/json" } },
-      deny_headers = { { name = "Accept-Charset", value = "UTF-8" } },
+      allow_headers = { "Content-Type:application/json" },
+      deny_headers = {  "Accept-Charset:UTF-8" },
     }
     kong.log.inspect(conf)
     local ok, err = validate(conf)
@@ -52,8 +51,8 @@ describe(PLUGIN_NAME .. ": (schema)", function()
 
   it("test many allow and many deny headers", function()
     local conf = {
-      allow_headers = { { name = "Content-Type", value = "application/json" }, { name = "x-header-test", value = "batatinha" } },
-      deny_headers = { { name = "Accept-Charset", value = "UTF-8" }, { name = "x-header-fail", value = "batatinha" } },
+      allow_headers = { "Content-Type:application/json","x-header-test:batatinha" },
+      deny_headers = { "Accept-Charset:UTF-8", "x-header-fail:batatinha" },
     }
     kong.log.inspect(conf)
     local ok, err = validate(conf)
