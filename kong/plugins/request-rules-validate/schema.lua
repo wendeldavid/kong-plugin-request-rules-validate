@@ -15,24 +15,6 @@ local function validate_headers(pair, validate_value)
   return true
 end
 
-local header_record = {
-  type = "record",
-  fields = {
-      { name = { type = typedefs.header_name, required = true } },
-      { value = { type = "string", required = true } }
-  }
-}
-
-local headers_list = {
-  type = "array",
-  default = {},
-  required = true,
-  elements = {
-    -- type = header_record
-    type = "string"
-  }
-}
-
 local colon_header_value_array = {
   type = "array",
   default = {},
@@ -47,14 +29,16 @@ return {
     { config = {
         type = "record",
         fields = {
+
           { allow_headers = colon_header_value_array },
           { deny_headers = colon_header_value_array },
-          -- { deny_headers = headers_list },
-          { permissive_allow = { type = "boolean", required = true, default = true }, },
+
+          { strict_allow = { type = "boolean", required = true, default = false }, },
         }
       },
     },
   },
+
   entity_checks = {
     { at_least_one_of = { "config.allow_headers", "config.deny_headers" } },
     { custom_entity_check = {
@@ -62,20 +46,18 @@ return {
         "config.allow_headers", "config.deny_headers"
       },
       fn = function(entity)
-          kong.log("================================ testando configs")
-          kong.log.inspect(entity.config.allow_headers)
           if entity.config ~= nil and entity.config.allow_headers ~= nil and entity.config.deny_headers ~= nil then
             kong.log("================================ entrou no if")
             return true
           end
 
-          -- for name, value in pairs(entity.config.allow_headers) do
-          --   if (value == ngx.nul) then
-          --     return nil, ""
-          --   end
-          -- end
-          kong.log("================================ pq choras?")
-          return false
+          -- -- for name, value in pairs(entity.config.allow_headers) do
+          -- --   if (value == ngx.nul) then
+          -- --     return nil, ""
+          -- --   end
+          -- -- end
+          -- kong.log("================================ pq choras?")
+          -- return false
         end
       }
     },

@@ -7,33 +7,90 @@ local RequestRulesValidateHandler = {
   PRIORITY = 999,
 }
 
-local function fail_deny(header_name)
-  kong.response.exit(400, { message = "Invalid header "..header_name.." value" })
+local function get_header(header)
+  local name, value = header:match("^([^:]+):*(.-)$")
+  return { name = name, value = value }
 end
 
-local function fail_allow(header_name)
+local function is_empty(table)
+  return next(table) == nil
+end
+
+local function fail_invalid(header_name)
+  local message = "Invalid header set"
+  if header_name ~= nil then
+    message = "Invalid header "..header_name.." value"
+  end
+  kong.response.exit(400, { message  = message } )
+end
+
+local function fail_missing(header_name)
   kong.response.exit(400, { message = "Missing header "..header_name })
 end
 
-function RequestRulesValidateHandler:access(conf)
-  -- kong.log.inspect(conf)
-
+local function check_deny(conf)
   local deny_headers = conf.deny_headers
-  for deny_header_name, deny_header_value in pairs(deny_headers) do
-    local request_header_value = kong.request.get_header(deny_header_name)
-    if request_header_value ~= nil and deny_header_value == request_header_value then
-      fail_deny(deny_header_name)
+  if deny_headers == nil or is_empty(deny_headers) then
+    return
+  end
+  for deny_header_idx in pairs(deny_headers) do
+    local deny_header = deny_headers[deny_header_idx]
+
+    local header = get_header(deny_header)
+
+    local request_header_value = kong.request.get_header(header.name)
+    if request_header_value ~= nil and request_header_value == header.value then
+      fail_invalid(header.name)
     end
   end
+end
 
+local function check_allow(conf)
   local allow_headers = conf.allow_headers
-  for allow_header_name, allow_header_value in pairs(allow_headers) do
-    local request_header_value = kong.request.get_header(allow_header_name)
-    if request_header_value == nil or allow_header_value ~= request_header_value then
-      fail_allow(allow_header_name)
+  if allow_headers == nil or is_empty(allow_headers)then
+    return
+  end
+
+  local all_failed = true
+  local missing_header = nil
+
+  for allow_header_idx in pairs(allow_headers) do
+    local allow_header = allow_headers[allow_header_idx]
+
+    local header = get_header(allow_header)
+
+    local request_header_value = kong.request.get_header(header.name)
+    if request_header_value == nil then
+      missing_header = header.name
+    else
+      if conf.strict_allow then
+        if request_header_value ~= header.value then
+          fail_invalid(header.name)
+        else
+          if request_header_value == header.value then
+            all_failed = false
+          end
+        end
+      end
     end
   end
 
+  if conf.strict_allow then
+    if missing_header ~= nil then
+      fail_missing(missing_header)
+    end
+    if all_failed then
+      fail_invalid()
+    end
+  end
+end
+
+function RequestRulesValidateHandler:access(conf)
+  kong.log.inspect(kong.request.get_headers())
+
+  check_deny(conf)
+
+  check_allow(conf)
 end
 
 return RequestRulesValidateHandler
