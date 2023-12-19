@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export POSTGRES_IMAGE=postgres:15
+export KONG_VERSION=2.8.4
 export KONG_LOG_LEVEL=debug
 
 rm -f luacov.report.out
