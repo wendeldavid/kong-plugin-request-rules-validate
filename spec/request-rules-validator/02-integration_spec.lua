@@ -69,11 +69,21 @@ for _, strategy in helpers.each_strategy() do
       end)
 
       -- ROUTE 1
+      describe("request_1 header without headers", function()
+        it("request_1 header without headers", function()
+          local r = client:get("/request_test_1", {
+            headers = {}
+          })
+
+          assert.response(r).has.status(200)
+        end)
+      end)
+
       describe("request_1 header allow ok", function()
         it("request_1 header allow ok", function()
           local r = client:get("/request_test_1", {
             headers = {
-              ["Content-Type"] = "application/json"
+              ["Content-Type"] = "application/json" --allow header match
             }
           })
 
@@ -85,8 +95,21 @@ for _, strategy in helpers.each_strategy() do
         it("request_1 headers permssive allow ok", function()
           local r = client:get("/request_test_1", {
             headers = {
-              ["Content-Type"] = "application/json",
-              ["X-Batatinha"] = "test"
+              ["Content-Type"] = "plain/text", -- allow header not match
+              ["X-Batatinha"] = "test" -- allow header not match
+            }
+          })
+
+          assert.response(r).has.status(200)
+        end)
+      end)
+
+      describe("request_1 headers permssive allow ok", function()
+        it("request_1 headers permssive allow ok", function()
+          local r = client:get("/request_test_1", {
+            headers = {
+              ["Content-Type"] = "application/json", -- allow header match
+              ["X-Batatinha"] = "test" -- allow header not match
             }
           })
 
@@ -98,7 +121,7 @@ for _, strategy in helpers.each_strategy() do
         it("request_1 header deny ok", function()
           local r = client:get("/request_test_1", {
             headers = {
-              ["x-header-fail"] = "not-fail"
+              ["x-header-fail"] = "not-fail" -- deny header not match
             }
           })
 
@@ -110,7 +133,7 @@ for _, strategy in helpers.each_strategy() do
         it("request_1 header deny fail", function()
           local r = client:get("/request_test_1", {
             headers = {
-              ["x-header-fail"] = "batatinha"
+              ["x-header-fail"] = "batatinha" -- deny header match
             }
           })
 
@@ -119,12 +142,22 @@ for _, strategy in helpers.each_strategy() do
       end)
 
       -- ROUTE 2
+      describe("request_2 header without headers", function()
+        it("request_2 header without headers", function()
+          local r = client:get("/request_test_1", {
+            headers = {}
+          })
+
+          assert.response(r).has.status(200)
+        end)
+      end)
+
       describe("request_2 header strict allow ok", function()
         it("request_2 header strict allow ok", function()
           local r = client:get("/request_test_2", {
             headers = {
-              ["Content-Type"] = "application/json",
-              ["x-real-ip"] = "0.0.0.0",
+              ["Content-Type"] = "application/json", -- allow header match
+              ["x-real-ip"] = "0.0.0.0", -- allow header match
             }
           })
 
@@ -136,9 +169,9 @@ for _, strategy in helpers.each_strategy() do
         it("request_2 header strict allow ok", function()
           local r = client:get("/request_test_2", {
             headers = {
-              ["Content-Type"] = "application/json",
-              ["x-real-ip"] = "0.0.0.0",
-              ["X-Batatinha"] = "test",
+              ["Content-Type"] = "application/json", --allow header match
+              ["x-real-ip"] = "0.0.0.0", -- allow header match
+              ["X-Batatinha"] = "test", -- header not configured
             }
           })
 
@@ -150,8 +183,8 @@ for _, strategy in helpers.each_strategy() do
         it("request_2 headers strict allow fail", function()
           local r = client:get("/request_test_2", {
             headers = {
-              ["Content-Type"] = "application/json",
-              ["X-Batatinha"] = "test",
+              ["Content-Type"] = "application/json", -- allow header match
+              ["X-Batatinha"] = "test", -- allow header not match
             }
           })
 

@@ -19,6 +19,24 @@ describe(PLUGIN_NAME .. ": (schema)", function()
     assert.equals("at least one of these fields must be non-empty: 'config.allow_headers', 'config.deny_headers'", err["@entity"][1])
   end)
 
+  it("test allow invalid header", function()
+    local conf = {
+      allow_headers = { "INVALID" },
+    }
+    local ok, err = validate(conf)
+    assert.is_nil(ok)
+    assert.is_truthy(err)
+  end)
+
+  it("test deny invalid header", function()
+    local conf = {
+      deny_headers = { "INVALID" },
+    }
+    local ok, err = validate(conf)
+    assert.is_nil(ok)
+    assert.is_truthy(err)
+  end)
+
   it("test only one allow headers", function()
     local conf = {
       allow_headers = { "Content-Type:application/json" },
