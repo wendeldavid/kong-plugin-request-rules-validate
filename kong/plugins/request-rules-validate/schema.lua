@@ -50,7 +50,7 @@ return {
           for allow_k, allow_v in pairs(entity.config.allow_headers) do
             for deny_k, deny_v in pairs(entity.config.deny_headers) do
               if allow_v == deny_v then
-                return nil, string.format("Config error: allow header '%s' conflicts with '%s'", allow_v, deny_v)
+                return nil, string.format("Config error: allow header '%s' conflicts with deny header '%s'", allow_v, deny_v)
               end
             end
           end
