@@ -50,7 +50,6 @@ describe(PLUGIN_NAME .. ": (schema)", function()
     local conf = {
       deny_headers = { "Accept-Charset:UTF-8" },
     }
-    kong.log.inspect(conf)
     local ok, err = validate(conf)
     assert.is_nil(err)
     assert.is_truthy(ok)
@@ -61,7 +60,6 @@ describe(PLUGIN_NAME .. ": (schema)", function()
       allow_headers = { "Content-Type:application/json" },
       deny_headers = {  "Accept-Charset:UTF-8" },
     }
-    kong.log.inspect(conf)
     local ok, err = validate(conf)
     assert.is_nil(err)
     assert.is_truthy(ok)
@@ -72,10 +70,19 @@ describe(PLUGIN_NAME .. ": (schema)", function()
       allow_headers = { "Content-Type:application/json","x-header-test:batatinha" },
       deny_headers = { "Accept-Charset:UTF-8", "x-header-fail:batatinha" },
     }
-    kong.log.inspect(conf)
     local ok, err = validate(conf)
     assert.is_nil(err)
     assert.is_truthy(ok)
+  end)
+
+  it("test allow and deny with conflict", function()
+    local conf = {
+      allow_headers = { "Content-Type:application/json" },
+      deny_headers = { "Content-Type:application/json" },
+    }
+    local ok, err = validate(conf)
+    assert.is_nil(ok)
+    assert.is_truthy(err)
   end)
 
 end)
