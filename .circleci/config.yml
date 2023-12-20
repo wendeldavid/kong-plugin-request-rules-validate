@@ -37,8 +37,8 @@ jobs:
           command: |
             echo "====== run tests with coverage"
             ls -hal
-            ls -hal /kong-plugin
-            ls -hal /kong-plugin/spec
+            ../kong-pongo/pongo.sh up
+            ../kong-pongo/pongo.sh shell -- ls -hal /
             ../kong-pongo/pongo.sh run -- --coverage
             ls -hal
             ls -hal ../kong-pongo/
