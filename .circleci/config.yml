@@ -28,10 +28,17 @@ jobs:
             echo "====== run lint in code"
             ../kong-pongo/pongo.sh lint
       - run:
+          name: Build
+          command: |
+            echo "======= build plugin"
+            ../kong-pongo/pongo.sh build
+      - run:
           name: Tests
           command: |
             echo "====== run tests with coverage"
             ls -hal
+            ls -hal /kong-plugin
+            ls -hal /kong-plugin/spec
             ../kong-pongo/pongo.sh run -- --coverage
             ls -hal
             ls -hal ../kong-pongo/
@@ -51,11 +58,6 @@ jobs:
             sudo apt-get update && sudo apt-get install luarocks -f
             luarocks install lua-cjson --local
       - checkout
-      - run:
-          name: Build
-          command: |
-            echo "======= build plugin"
-            ../kong-pongo/pongo.sh build
       - run:
           name: Publish
           command: |
