@@ -40,10 +40,9 @@ jobs:
             sudo chown -R circleci:circleci /pongo_wd
             sudo sh -c "echo 'kong-plugin' > /pongo_wd/.containerid"
             sudo cp -r ./ /pongo_wd
-            ls -hal /
-            ls -hal /pongo_wd
-            echo "====== end debug"
             cd /pongo_wd
+            ls -hal
+            echo "====== end debug"
             ../kong-pongo/pongo.sh up
             ../kong-pongo/pongo.sh shell -- ls -hal /kong-plugin/spec
             ../kong-pongo/pongo.sh run -- --coverage
