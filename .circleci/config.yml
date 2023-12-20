@@ -22,23 +22,21 @@ jobs:
             apt-get update && apt-get install -y git
             git clone --single-branch https://github.com/Kong/kong-pongo ../kong-pongo
             chmod 777 ../kong-pongo/pongo.sh
-            ../kong-pongo/pongo.sh up
-      - run:
-          name: Build
-          command: |
-            echo "======= build plugin"
-            ../kong-pongo/pongo.sh build
       - run:
           name: Lint
           command: |
             echo "====== run lint in code"
             ../kong-pongo/pongo.sh lint
       - run:
+          name: Build
+          command: |
+            echo "======= build plugin"
+            ../kong-pongo/pongo.sh build
+      - run:
           name: Tests
           command: |
             echo "====== run tests with coverage"
             ls -hal
-            ../kong-pongo/pongo.sh up
             ../kong-pongo/pongo.sh run -- --coverage
             ls -hal
             ls -hal ../kong-pongo/
