@@ -9,10 +9,16 @@ jobs:
       - setup_remote_docker:
           version: 20.10.14
       - checkout
+      # - run:
+      #     name: Setup luarocks
+      #     command: |
+      #       echo "======= setup luarocks"
+      #       sudo apt-get update && sudo apt-get install luarocks -f
+      #       luarocks install luacov --local
       - run:
           name: Setup pongo
           command: |
-            echo "======= setup environment"
+            echo "======= setup pongo"
             apt-get update && apt-get install -y git
             git clone --single-branch https://github.com/Kong/kong-pongo ../kong-pongo
             chmod 777 ../kong-pongo/pongo.sh
@@ -27,13 +33,15 @@ jobs:
           command: |
             echo "====== run lint in code"
             ../kong-pongo/pongo.sh lint
-      # - run:
-      #     name: Tests
-      #     command: |
-      #       echo "====== run tests with coverage"
-      #       ls -hal
-      #       ../kong-pongo/pongo.sh up
-      #       ../kong-pongo/pongo.sh run -l --no-redis -- --coverage
+      - run:
+          name: Tests
+          command: |
+            echo "====== run tests with coverage"
+            ls -hal
+            ../kong-pongo/pongo.sh up
+            ../kong-pongo/pongo.sh run -- --coverage
+            ls -hal
+            ls -hal ../kong-pongo/
       # - store_artifacts:
       #     path: ./
       #     destination: luacov.report.out

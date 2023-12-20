@@ -10,4 +10,10 @@ rm -f luacov.stats.out
 # all tests
 pongo run -v -- --coverage
 
+exit_code=$?
+
+echo $exit_code
+
 pongo down
+
+exit $exit_code

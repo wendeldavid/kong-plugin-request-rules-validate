@@ -44,14 +44,12 @@ local PLUGIN_NAME = "request-rules-validate"
 
       -- start kong
       assert(helpers.start_kong({
-        -- set the strategy
-        database   = strategy,
+        -- set the database
+        database   = "postgres",
         -- use the custom test template to create a local mock server
         nginx_conf = "spec/fixtures/custom_nginx.template",
         -- make sure our plugin gets loaded
         plugins = "bundled," .. PLUGIN_NAME,
-        -- write & load declarative config, only if 'strategy=off'
-        declarative_config = strategy == "off" and helpers.make_yaml_file() or nil,
       }))
     end)
 
