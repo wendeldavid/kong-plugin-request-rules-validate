@@ -39,6 +39,7 @@ jobs:
             sudo mkdir /pongo_wd
             sudo chown -R circleci:circleci /pongo_wd
             sudo sh -c "echo 'kong-plugin' > /pongo_wd/.containerid"
+            sudo cp -r ./ /pongo_wd
             ls -hal /
             ls -hal /pongo_wd
             echo "====== end debug"
