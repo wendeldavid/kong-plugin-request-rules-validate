@@ -36,8 +36,7 @@ jobs:
           name: Tests
           command: |
             echo "====== run tests with coverage"
-            chown circleci:circleci /
-            mkdir /pongo_wd
+            sudo mkdir /pongo_wd
             cat "kong-plugin" >> /pongo_wd/.containerid
             cp -r ./ /pongo_wd
             ls -hal /
