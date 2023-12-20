@@ -36,7 +36,8 @@ jobs:
           name: Tests
           command: |
             echo "====== run tests with coverage"
-            ls -hal
+            ls -hal /
+            ls -hal /pongo_wd
             echo "====== end debug"
             ../kong-pongo/pongo.sh up
             ../kong-pongo/pongo.sh shell -- ls -hal /kong-plugin/spec
