@@ -37,7 +37,7 @@ jobs:
           command: |
             echo "====== run tests with coverage"
             sudo mkdir /pongo_wd
-            sudo cat "kong-plugin" >> /pongo_wd/.containerid
+            sudo echo "kong-plugin" >> /pongo_wd/.containerid
             cp -r ./ /pongo_wd
             ls -hal /
             ls -hal /pongo_wd
