@@ -36,6 +36,7 @@ jobs:
           name: Tests
           command: |
             echo "====== run tests with coverage"
+            whoami
             mkdir /pongo_wd
             cat "kong-plugin" >> /pongo_wd/.containerid
             cp -r ./ /pongo_wd
