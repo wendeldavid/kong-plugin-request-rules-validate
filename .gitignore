@@ -51,3 +51,5 @@ luacov.stats.out
 luacov.report.out
 # exclude Pongo containerid file
 .containerid
+
+./pongo/.bash_history
