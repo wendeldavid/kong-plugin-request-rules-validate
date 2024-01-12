@@ -29,11 +29,10 @@ jobs:
             echo "======= running tests with coverage"
             mkdir test-results/
             export POSTGRES_IMAGE=postgres:15
-            export KONG_VERSION=2.8.4
             export KONG_LOG_LEVEL=debug
             ../kong-pongo/pongo.sh up
             sleep 5
-            ../kong-pongo/pongo.sh run -- --coverage >> test-results/output.xml 2>&1 || true
+            ../kong-pongo/pongo.sh run -- -o junit --coverage >> test-results/output.xml 2>&1 || true
             echo "======= sanitizing output tests"
             end_line=$(grep -no "<testsuites" test-results/output.xml | cut -d: -f1)
             end_line=$(echo $end_line | bc)
