@@ -2,19 +2,10 @@ version: 2.1
 
 jobs:
   build-plugin:
-    docker:
-      - image: cimg/base:2022.09
-    resource_class: large
+    machine:
+      image: ubuntu-2204:2022.04.2
     steps:
-      - setup_remote_docker:
-          version: 20.10.14
       - checkout
-      # - run:
-      #     name: Setup luarocks
-      #     command: |
-      #       echo "======= setup luarocks"
-      #       sudo apt-get update && sudo apt-get install luarocks -f
-      #       luarocks install luacov --local
       - run:
           name: Setup pongo
           command: |
@@ -35,18 +26,40 @@ jobs:
       - run:
           name: Tests
           command: |
+            echo "======= running tests with coverage"
+            mkdir test-results/
+            export POSTGRES_IMAGE=postgres:15
+            export KONG_VERSION=2.8.4
+            export KONG_LOG_LEVEL=debug
             ../kong-pongo/pongo.sh up
-            ../kong-pongo/pongo.sh shell -- sh -c "echo 'kong-plugin' > /pongo_wd/.containerid"
-            ../kong-pongo/pongo.sh shell -- mkdir /pongo_wd
-            ../kong-pongo/pongo.sh shell -- cp -r ./ /pongo_wd
-            cd /pongo_wd
-            ../kong-pongo/pongo.sh run -- --coverage
-      # - store_artifacts:
-      #     path: ./
-      #     destination: luacov.report.out
-      # - store_artifacts:
-      #     path: ./
-      #     destination: luacov.report.out
+            sleep 5
+            ../kong-pongo/pongo.sh run -- --coverage >> test-results/output.xml 2>&1 || true
+            echo "======= sanitizing output tests"
+            end_line=$(grep -no "<testsuites" test-results/output.xml | cut -d: -f1)
+            end_line=$(echo $end_line | bc)
+            end_line=$((end_line - 1))
+            sed -i "1,${end_line}d" test-results/output.xml
+            grep "errors='0'" test-results/output.xml
+            if [ $? -ne 0 ]; then
+                exit 1
+            fi
+            grep "failures='0'" test-results/output.xml
+            c=$?
+            if [ $c -ne 0 ]; then
+                echo "saiu no erro"
+                exit 1
+            fi
+      - store_test_results:
+          path: ./test-results
+      - store_artifacts:
+          path: ./test-results/output.xml
+          destination: junit.xml
+      - store_artifacts:
+          path: ./luacov.report.out
+          destination: luacov.report.out
+      - store_artifacts:
+          path: ./luacov.stats.out
+          destination: luacov.stats.out
   deploy-plugin:
     docker:
       - image: cimg/base:2022.09
@@ -62,8 +75,8 @@ jobs:
           command: |
             echo "====== publish plugin version ${CIRCLE_TAG}"
             sed -i "s|\${TAG}|${CIRCLE_TAG}|g" kong-plugin-request-rules-validate-1.rockspec
-            mv kong-plugin-request-rules-validate-TAG-1.rockspec kong-plugin-request-rules-validate-${CIRCLE_TAG}-1.rockspec
-            luarocks upload --api-key ${LUAROCKS_KEY} kong-plugin-request-rules-validate-${CIRCLE_TAG}-1.rockspec
+            mv kong-plugin-rules-validate-TAG-1.rockspec kong-plugin-rules-validate-${CIRCLE_TAG}-1.rockspec
+            luarocks upload --api-key ${LUAROCKS_KEY} kong-plugin-rules-validate-${CIRCLE_TAG}-1.rockspec
 workflows:
   version: 2
   build:
